@@ -82,7 +82,7 @@ done
 
 ```bash
 npm run build
-./docker/build.sh
+./src/runtimes/docker/build.sh
 ```
 
 Build must be clean before proceeding.
@@ -142,7 +142,7 @@ Look for:
 The agent is trying to run `ollama` CLI inside the container instead of using the MCP tools. This means:
 1. The MCP server wasn't registered — check `agent/runner/src/index.ts` has the `ollama` entry in `mcpServers`
 2. The per-group source wasn't updated — re-copy files (see Phase 2)
-3. The container wasn't rebuilt — run `./docker/build.sh`
+3. The container wasn't rebuilt — run `./src/runtimes/docker/build.sh`
 
 ### "Failed to connect to Ollama"
 

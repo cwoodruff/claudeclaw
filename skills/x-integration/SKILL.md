@@ -46,7 +46,7 @@ npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/setup.ts
 # Verify: data/x-auth.json should exist after successful login
 
 # 2. Rebuild container to include skill
-./docker/build.sh
+./src/runtimes/docker/build.sh
 # Verify: Output shows "COPY .claude/skills/x-integration/agent.ts"
 
 # 3. Rebuild host and restart service
@@ -200,21 +200,21 @@ Add to the end of tools array (before the closing `]`):
 
 ---
 
-**3. Build script: `docker/build.sh`**
+**3. Build script: `src/runtimes/docker/build.sh`**
 
-Change build context from `docker/` to project root (required to access `.claude/skills/`):
+Change build context from `src/runtimes/docker/` to project root (required to access `.claude/skills/`):
 ```bash
 # Find:
 docker build -t "${IMAGE_NAME}:${TAG}" .
 
 # Replace with:
 cd "$SCRIPT_DIR/.."
-docker build -t "${IMAGE_NAME}:${TAG}" -f docker/Dockerfile .
+docker build -t "${IMAGE_NAME}:${TAG}" -f src/runtimes/docker/Dockerfile .
 ```
 
 ---
 
-**4. Dockerfile: `docker/Dockerfile`**
+**4. Dockerfile: `src/runtimes/docker/Dockerfile`**
 
 First, update the build context paths (required to access `.claude/skills/` from project root):
 ```dockerfile
@@ -264,12 +264,12 @@ cat data/x-auth.json  # Should show {"authenticated": true, ...}
 ### 3. Rebuild Container
 
 ```bash
-./docker/build.sh
+./src/runtimes/docker/build.sh
 ```
 
 **Verify success:**
 ```bash
-./docker/build.sh 2>&1 | grep -i "agent.ts"  # Should show COPY line
+./src/runtimes/docker/build.sh 2>&1 | grep -i "agent.ts"  # Should show COPY line
 ```
 
 ### 4. Restart Service
@@ -407,7 +407,7 @@ If MCP tools not found in container:
 
 ```bash
 # Verify build copies skill
-./docker/build.sh 2>&1 | grep -i skill
+./src/runtimes/docker/build.sh 2>&1 | grep -i skill
 
 # Check container has the file
 docker run claudeclaw-agent ls -la /app/src/skills/

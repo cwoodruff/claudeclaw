@@ -62,6 +62,10 @@ src/
     env.ts                    # .env reader
     logger.ts                 # Pino logger
     types.ts                  # Core types (Channel, RegisteredGroup, NewMessage)
+  runtimes/                   # Agent execution backends
+    container-runtime.ts      # Container runtime abstraction (binary detection, lifecycle)
+    container-runner.ts       # Container-based agent runner (Docker/Apple Container)
+    sandbox-runner.ts         # Sandbox-based agent runner (srt, OS-level sandboxing)
   channels/                   # Built-in channels (whatsapp, telegram)
   cost-tracking/              # Built-in: token usage + cost estimation
   webhook/                    # Built-in: HTTP webhook triggers

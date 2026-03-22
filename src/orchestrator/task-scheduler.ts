@@ -7,7 +7,7 @@ import {
   ContainerOutput,
   runContainerAgent,
   writeTasksSnapshot,
-} from './container-runner.js';
+} from '../runtimes/container-runner.js';
 import {
   getAllTasks,
   getDueTasks,

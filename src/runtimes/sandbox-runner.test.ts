@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock logger before any imports that use it
-vi.mock('./logger.js', () => ({
+vi.mock('../orchestrator/logger.js', () => ({
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
@@ -23,13 +23,13 @@ vi.mock('child_process', async () => {
 });
 
 // Mock group-folder
-vi.mock('./group-folder.js', () => ({
+vi.mock('../orchestrator/group-folder.js', () => ({
   resolveGroupFolderPath: (folder: string) => `/tmp/test-groups/${folder}`,
   resolveGroupIpcPath: (folder: string) => `/tmp/test-ipc/${folder}`,
 }));
 
 // Mock mount-security
-vi.mock('./mount-security.js', () => ({
+vi.mock('../orchestrator/mount-security.js', () => ({
   validateAdditionalMounts: vi.fn().mockReturnValue([]),
 }));
 

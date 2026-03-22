@@ -68,7 +68,7 @@ The agent runner is runtime-agnostic — `CLAUDECLAW_*_DIR` env vars resolve pat
 The Docker-era `container/` directory was split:
 - `agent/runner/` — runtime-agnostic agent code (used by both sandbox and Docker)
 - `agent/skills/` — agent-side skills
-- `docker/` — Docker-only files (Dockerfile, build.sh)
+- `src/runtimes/docker/` — Docker-only files (Dockerfile, build.sh)
 
 30 files updated across source, tests, docs, and 13 skills.
 

@@ -322,7 +322,7 @@ Also add `TELEGRAM_BOT_POOL` to the launchd plist (`~/Library/LaunchAgents/com.c
 
 ```bash
 npm run build
-./docker/build.sh  # Required — MCP tool changed
+./src/runtimes/docker/build.sh  # Required — MCP tool changed
 # macOS:
 launchctl unload ~/Library/LaunchAgents/com.claudeclaw.plist
 launchctl load ~/Library/LaunchAgents/com.claudeclaw.plist
@@ -383,4 +383,4 @@ To remove Agent Swarm support while keeping basic Telegram:
 5. Remove `sender` param from MCP tool in `agent/runner/src/ipc-mcp-stdio.ts`
 6. Remove Agent Teams section from group CLAUDE.md files
 7. Remove `TELEGRAM_BOT_POOL` from `.env`, `data/env/env`, and launchd plist/systemd unit
-8. Rebuild: `npm run build && ./docker/build.sh && launchctl unload ~/Library/LaunchAgents/com.claudeclaw.plist && launchctl load ~/Library/LaunchAgents/com.claudeclaw.plist` (macOS) or `npm run build && ./docker/build.sh && systemctl --user restart claudeclaw` (Linux)
+8. Rebuild: `npm run build && ./src/runtimes/docker/build.sh && launchctl unload ~/Library/LaunchAgents/com.claudeclaw.plist && launchctl load ~/Library/LaunchAgents/com.claudeclaw.plist` (macOS) or `npm run build && ./src/runtimes/docker/build.sh && systemctl --user restart claudeclaw` (Linux)

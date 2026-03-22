@@ -63,7 +63,7 @@ All tests must pass and build must be clean before proceeding.
 
 1. Rebuild the container (agent-runner changes need a rebuild):
    ```bash
-   ./docker/build.sh
+   ./src/runtimes/docker/build.sh
    ```
 
 2. Sync agent-runner source to group caches:

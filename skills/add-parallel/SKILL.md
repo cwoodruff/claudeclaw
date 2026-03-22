@@ -219,7 +219,7 @@ AskUserQuestion: I can do deep research on [topic] using Parallel's Task API. Th
 Build the container with updated agent runner:
 
 ```bash
-./docker/build.sh
+./src/runtimes/docker/build.sh
 ```
 
 Verify the build:
@@ -288,5 +288,5 @@ To remove Parallel AI integration:
 1. Remove from .env: `sed -i.bak '/PARALLEL_API_KEY/d' .env`
 2. Revert changes to container-runner.ts and agent-runner/src/index.ts
 3. Remove Web Research Tools section from groups/main/CLAUDE.md
-4. Rebuild: `./docker/build.sh && npm run build`
+4. Rebuild: `./src/runtimes/docker/build.sh && npm run build`
 5. Restart: `launchctl kickstart -k gui/$(id -u)/com.claudeclaw` (macOS) or `systemctl --user restart claudeclaw` (Linux)

@@ -6,7 +6,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 
-import { logger } from './logger.js';
+import { logger } from '../orchestrator/logger.js';
 
 /** The container runtime binary name. */
 export const CONTAINER_RUNTIME_BIN = 'container';

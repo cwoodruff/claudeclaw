@@ -6,8 +6,8 @@ import { ChildProcess, exec, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-import { readEnvFile } from './env.js';
-import { getExtensionContainerEnvKeys } from './extensions.js';
+import { readEnvFile } from '../orchestrator/env.js';
+import { getExtensionContainerEnvKeys } from '../orchestrator/extensions.js';
 import {
   CONTAINER_IMAGE,
   CONTAINER_MAX_OUTPUT_SIZE,
@@ -17,9 +17,9 @@ import {
   GROUPS_DIR,
   IDLE_TIMEOUT,
   TIMEZONE,
-} from './config.js';
-import { resolveGroupFolderPath, resolveGroupIpcPath } from './group-folder.js';
-import { logger } from './logger.js';
+} from '../orchestrator/config.js';
+import { resolveGroupFolderPath, resolveGroupIpcPath } from '../orchestrator/group-folder.js';
+import { logger } from '../orchestrator/logger.js';
 import {
   CONTAINER_HOST_GATEWAY,
   CONTAINER_RUNTIME_BIN,
@@ -27,9 +27,9 @@ import {
   readonlyMountArgs,
   stopContainer,
 } from './container-runtime.js';
-import { detectAuthMode } from './credential-proxy.js';
-import { validateAdditionalMounts } from './mount-security.js';
-import { RegisteredGroup } from './types.js';
+import { detectAuthMode } from '../orchestrator/credential-proxy.js';
+import { validateAdditionalMounts } from '../orchestrator/mount-security.js';
+import { RegisteredGroup } from '../orchestrator/types.js';
 
 // Sentinel markers for robust output parsing (must match agent-runner)
 const OUTPUT_START_MARKER = '---CLAUDECLAW_OUTPUT_START---';
@@ -43,7 +43,7 @@ export interface ContainerInput {
   isMain: boolean;
   isScheduledTask?: boolean;
   assistantName?: string;
-  agentConfig?: import('./types.js').AgentConfig;
+  agentConfig?: import('../orchestrator/types.js').AgentConfig;
 }
 
 export interface ContainerOutput {

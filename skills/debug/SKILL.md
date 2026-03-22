@@ -234,11 +234,11 @@ query({
 npm run build
 
 # Rebuild container (use --no-cache for clean rebuild)
-./docker/build.sh
+./src/runtimes/docker/build.sh
 
 # Or force full rebuild
 docker builder prune -af
-./docker/build.sh
+./src/runtimes/docker/build.sh
 ```
 
 ## Checking Container Image
@@ -367,7 +367,7 @@ echo -e "\n3. Container runtime running?"
 docker info &>/dev/null && echo "OK" || echo "NOT RUNNING - start Docker Desktop (macOS) or sudo systemctl start docker (Linux)"
 
 echo -e "\n4. Container image exists?"
-echo '{}' | docker run -i --entrypoint /bin/echo claudeclaw-agent:latest "OK" 2>/dev/null || echo "MISSING - run ./docker/build.sh"
+echo '{}' | docker run -i --entrypoint /bin/echo claudeclaw-agent:latest "OK" 2>/dev/null || echo "MISSING - run ./src/runtimes/docker/build.sh"
 
 echo -e "\n5. Session mount path correct?"
 grep -q "/home/node/.claude" src/orchestrator/container-runner.ts 2>/dev/null && echo "OK" || echo "WRONG - should mount to /home/node/.claude/, not /root/.claude/"

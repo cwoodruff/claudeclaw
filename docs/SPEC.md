@@ -277,7 +277,7 @@ claudeclaw/
 │   │       └── ipc-mcp-stdio.ts     # Stdio-based MCP server for host communication
 │   └── skills/                      # Skills available to agents
 │
-├── docker/
+├── src/runtimes/docker/
 │   ├── Dockerfile                   # Container image (runs as 'node' user, includes Claude Code CLI)
 │   └── build.sh                     # Build script for container image
 │   └── skills/

@@ -46,7 +46,7 @@ npm run build
 ### Rebuild container
 
 ```bash
-./docker/build.sh
+./src/runtimes/docker/build.sh
 ```
 
 > **Service name:** Derived from the directory name: `com.claudeclaw.<dirname>` (macOS) / `claudeclaw-<dirname>` (Linux). For example, if cwd is `my-assistant`, the service is `com.claudeclaw.my-assistant`. Determine the correct service name before running service commands below.
@@ -108,7 +108,7 @@ cd /tmp/claudeclaw-test
 claude  # then run /add-compact
 npm run build
 npm test
-./docker/build.sh
+./src/runtimes/docker/build.sh
 # Manual: send /compact from main group, verify compaction + continuation
 # Manual: send @<assistant> /compact from non-main as non-admin, verify denial
 # Manual: send @<assistant> /compact from non-main as admin, verify allowed

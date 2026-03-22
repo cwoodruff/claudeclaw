@@ -15,7 +15,7 @@ import { ChildProcess, execFileSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-import { readEnvFile } from './env.js';
+import { readEnvFile } from '../orchestrator/env.js';
 import {
   CODE_ROOT,
   CONTAINER_MAX_OUTPUT_SIZE,
@@ -24,11 +24,11 @@ import {
   GROUPS_DIR,
   IDLE_TIMEOUT,
   TIMEZONE,
-} from './config.js';
-import { resolveGroupFolderPath, resolveGroupIpcPath } from './group-folder.js';
-import { logger } from './logger.js';
-import { validateAdditionalMounts } from './mount-security.js';
-import { RegisteredGroup } from './types.js';
+} from '../orchestrator/config.js';
+import { resolveGroupFolderPath, resolveGroupIpcPath } from '../orchestrator/group-folder.js';
+import { logger } from '../orchestrator/logger.js';
+import { validateAdditionalMounts } from '../orchestrator/mount-security.js';
+import { RegisteredGroup } from '../orchestrator/types.js';
 import type { ContainerInput, ContainerOutput } from './container-runner.js';
 
 // Sentinel markers for robust output parsing (must match agent-runner)

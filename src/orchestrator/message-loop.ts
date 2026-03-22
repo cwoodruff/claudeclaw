@@ -18,7 +18,7 @@ import {
   cleanupSandboxOrphans,
   ensureSandboxRuntimeAvailable,
   runSandboxAgent,
-} from './sandbox-runner.js';
+} from '../runtimes/sandbox-runner.js';
 // Channels loaded from src/index.ts;
 import {
   getChannelFactory,
@@ -29,12 +29,12 @@ import {
   runContainerAgent,
   writeGroupsSnapshot,
   writeTasksSnapshot,
-} from './container-runner.js';
+} from '../runtimes/container-runner.js';
 import {
   cleanupOrphans,
   ensureContainerRuntimeRunning,
   PROXY_BIND_HOST,
-} from './container-runtime.js';
+} from '../runtimes/container-runtime.js';
 import {
   getAllChats,
   getAllRegisteredGroups,
@@ -151,7 +151,7 @@ function registerGroup(jid: string, group: RegisteredGroup): void {
  * Get available groups list for the agent.
  * Returns groups ordered by most recent activity.
  */
-export function getAvailableGroups(): import('./container-runner.js').AvailableGroup[] {
+export function getAvailableGroups(): import('../runtimes/container-runner.js').AvailableGroup[] {
   const chats = getAllChats();
   const registeredJids = new Set(Object.keys(registeredGroups));
 

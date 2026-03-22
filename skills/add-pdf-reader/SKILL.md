@@ -40,7 +40,7 @@ git merge whatsapp/skill/pdf-reader || {
 This merges in:
 - `agent/skills/pdf-reader/SKILL.md` (agent-facing documentation)
 - `agent/skills/pdf-reader/pdf-reader` (CLI script)
-- `poppler-utils` in `docker/Dockerfile`
+- `poppler-utils` in `src/runtimes/docker/Dockerfile`
 - PDF attachment download in `src/channels/whatsapp.ts`
 - PDF tests in `src/channels/whatsapp.test.ts`
 
@@ -56,7 +56,7 @@ npx vitest run src/channels/whatsapp.test.ts
 ### Rebuild container
 
 ```bash
-./docker/build.sh
+./src/runtimes/docker/build.sh
 ```
 
 > **Service name:** Derived from the directory name: `com.claudeclaw.<dirname>` (macOS) / `claudeclaw-<dirname>` (Linux). For example, if cwd is `my-assistant`, the service is `com.claudeclaw.my-assistant`. Determine the correct service name before running service commands below.
@@ -95,7 +95,7 @@ Look for:
 
 ### Agent says pdf-reader command not found
 
-Container needs rebuilding. Run `./docker/build.sh` and restart the service.
+Container needs rebuilding. Run `./src/runtimes/docker/build.sh` and restart the service.
 
 ### PDF text extraction is empty
 
