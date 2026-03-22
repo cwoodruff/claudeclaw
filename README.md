@@ -254,15 +254,15 @@ src/
     group-queue.ts                 # Concurrency control
     ipc.ts                         # File-based IPC watcher
     types.ts                       # Core types (AgentConfig, RegisteredGroup, etc.)
-  channels/
-    slack.ts                       # Slack (Socket Mode, thread JIDs, reaction typing)
+  channels/                        # Built-in channels (whatsapp, telegram)
   webhook/
     server.ts                      # HTTP server with HMAC-SHA256 auth
     index.ts                       # Webhook extension registration
   cost-tracking/
     index.ts                       # Cost tracking extension (agent_runs table)
-  triage/
-    index.ts                       # Triage extension registration
+extensions/                        # Installable extensions (per-instance)
+  claudeclaw-slack/                # Slack channel (/install-extension slack)
+  claudeclaw-triage/               # Triage + SWE agents (/install-extension triage)
 agent/
   runner/src/index.ts              # Runs inside sandbox/container — Claude Agent SDK
   runner/src/ipc-mcp-stdio.ts      # MCP server (memory, tasks, messaging tools)
@@ -312,7 +312,7 @@ registerExtension({
 });
 ```
 
-Built-in extensions: **webhook triggers**, **cost tracking**, **triage + SWE queue**.
+Built-in extensions: **webhook triggers**, **cost tracking**. Installable: **claudeclaw-slack**, **claudeclaw-triage**.
 
 ## Customizing
 
@@ -354,12 +354,54 @@ We don't want configuration sprawl. Every user should customize ClaudeClaw so th
 
 Ask Claude Code. "Why isn't the scheduler running?" "What's in the recent logs?" Or run `/debug` for guided troubleshooting.
 
+## Roadmap
+
+### Multi-Model Agent Routing
+
+Support multiple LLM providers per agent, similar to [pi.dev](https://pi.dev). The `agentConfig.model` field expands to accept provider-prefixed model strings:
+
+```typescript
+agentConfig: {
+  model: 'anthropic/opus',       // Current default
+  model: 'openai/gpt-4o',        // OpenAI
+  model: 'google/gemini-pro',    // Google
+  model: 'ollama/llama3',        // Local via Ollama
+}
+```
+
+**Phased approach:**
+1. **Provider-aware model field** — Agent runner switches SDK based on prefix. Per-group model selection already works; this adds provider routing.
+2. **Provider abstraction layer** — `Provider` interface wrapping each SDK. Tool schemas translated per provider. Unified streaming response format.
+3. **Smart routing engine** — Pick provider/model based on task type, cost budget, latency. Fallback chains (try Opus → fall back to GPT-4 on rate limit). Cost-aware routing (triage on Haiku, SWE on Opus).
+
+### QMD Semantic Memory
+
+Replace grep-based `memory_search` with [QMD](https://github.com/tobi/qmd) for hybrid BM25 + vector semantic search with LLM re-ranking. Fully local, no API calls for search.
+
+**What changes:**
+- `memory_search` tool calls QMD instead of grep
+- Automatic indexing of daily logs, topic files, CLAUDE.md, and archived conversations
+- Semantic queries: "what did we discuss about the API redesign last week" instead of keyword matching
+- QMD runs as a local process — no external dependencies, no data leaves the machine
+
+**Install:** `/add-qmd` skill sets up the QMD binary, indexes existing memory, and swaps the search implementation.
+
+### Future Extensions
+
+| Extension | Purpose |
+|-----------|---------|
+| `claudeclaw-discord` | Discord channel integration |
+| `claudeclaw-gmail` | Gmail as a full channel (not just a tool) |
+| `claudeclaw-memory` | QMD-powered semantic memory (replaces grep search) |
+| `claudeclaw-tui` | Terminal UI for managing instances, groups, tasks |
+| `claudeclaw-router` | Multi-model routing engine with cost optimization |
+
 ## Development
 
 ```bash
 npm run build    # Compile TypeScript
 npm run dev      # Run with tsx
-npm test         # Run tests (415 tests)
+npm test         # Run tests (355 core tests)
 ```
 
 ## License
