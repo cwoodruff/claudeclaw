@@ -217,6 +217,18 @@ registerExtension({
 
 Then import in `src/index.ts`.
 
+## Security Rules
+
+**NEVER hardcode credentials, API keys, database URLs, hostnames, or project-specific identifiers in any committed file** — especially skills, agent prompts, and extension templates. All secrets and project-specific values MUST come from `.env` or group-level environment variables.
+
+- Use `$DATABASE_READONLY_URL`, `$GITHUB_REPO`, `$PROJECT_DIR` style env var references in skills
+- Use `<OWNER>/<REPO>`, `<PROJECT>`, `<HOST>` placeholders in template examples
+- Credentials belong in `.env` (gitignored), never in `.md`, `.ts`, or `.json` files
+- Before committing: mentally scan every staged file for passwords, tokens, hostnames, internal repo names, database connection strings
+- If you find hardcoded secrets in existing files, replace with env var references immediately
+
+This rule exists because credentials were previously committed to a public repo. Treat every commit as public.
+
 ## Troubleshooting
 
 **Stale sessions after switching runtimes:** When switching between container and sandbox (or vice versa), existing session IDs may cause "No conversation found" errors. Clear with: `sqlite3 store/messages.db "DELETE FROM sessions"`

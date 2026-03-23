@@ -1,0 +1,43 @@
+#!/bin/bash
+# Pre-commit hook: Block commits containing secrets or project-specific identifiers
+# Patterns to catch: passwords, connection strings, API keys, internal hostnames
+
+PATTERNS=(
+  'xoxb-[0-9]'           # Slack bot tokens
+  'xapp-[0-9]'           # Slack app tokens
+  'sk-ant-'              # Anthropic API keys
+  'sk-[a-zA-Z0-9]{20,}'  # Generic API keys
+  'password.*=.*[a-f0-9]{16,}'  # Passwords in assignments
+  '://[^@]+:[^@]+@[^/]+\.(net|com|io|dev|app)' # Connection strings with credentials
+  'proxy\.rlwy\.net'     # Railway proxy hosts
+)
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$STAGED" ] && exit 0
+
+FOUND=0
+for file in $STAGED; do
+  # Skip binary files and .env (already gitignored)
+  [[ "$file" == *.png ]] || [[ "$file" == *.jpg ]] || [[ "$file" == *.ico ]] && continue
+  [[ "$file" == .env* ]] && continue
+
+  for pattern in "${PATTERNS[@]}"; do
+    if git diff --cached -- "$file" | grep -qE "^\+.*$pattern"; then
+      echo "❌ BLOCKED: Potential secret in $file matching pattern: $pattern"
+      git diff --cached -- "$file" | grep -E "^\+.*$pattern" | head -3
+      echo ""
+      FOUND=1
+    fi
+  done
+done
+
+if [ $FOUND -ne 0 ]; then
+  echo "================================================================"
+  echo "Commit blocked: potential secrets detected in staged files."
+  echo "Move secrets to .env and use env var references instead."
+  echo "To bypass (if false positive): git commit --no-verify"
+  echo "================================================================"
+  exit 1
+fi
+
+exit 0
