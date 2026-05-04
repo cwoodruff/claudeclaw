@@ -180,8 +180,8 @@ export async function run(args: string[]): Promise<void> {
   // Start auth process in background
   const authArgs =
     method === 'pairing-code'
-      ? ['src/whatsapp-auth.ts', '--pairing-code', '--phone', phone]
-      : ['src/whatsapp-auth.ts'];
+      ? ['src/channels/whatsapp-auth.ts', '--pairing-code', '--phone', phone]
+      : ['src/channels/whatsapp-auth.ts'];
 
   const authProc = spawn('npx', ['tsx', ...authArgs], {
     cwd: projectRoot,
