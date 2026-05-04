@@ -76,22 +76,20 @@ function buildVolumeMounts(
   const groupDir = resolveGroupFolderPath(group.folder);
 
   if (isMain) {
-    // Main gets the project root read-only. Writable paths the agent needs
-    // (group folder, IPC, .claude/) are mounted separately below.
-    // Read-only prevents the agent from modifying host application code
-    // (src/, dist/, package.json, etc.) which would bypass the sandbox
-    // entirely on next restart.
-    mounts.push({
-      hostPath: projectRoot,
-      containerPath: '/workspace/project',
-      readonly: true,
-    });
-
-    // Shadow .env so the agent cannot read secrets from the mounted project root.
-    // Credentials are injected by the credential proxy, never exposed to containers.
-    // Apple Container only supports directory mounts, so the .env shadow is handled
-    // inside the container entrypoint via mount --bind. Skip the host-side mount.
+    // Mount the project root read-only on Docker, where we can shadow .env via
+    // a host-side /dev/null bind mount. On Apple Container, shadowing isn't
+    // possible (kata kernel rejects bind-mounts over files inside a readonly
+    // mount, and chardev-on-file bind mounts), so skip the project mount
+    // entirely rather than expose .env. Agents in main groups can still access
+    // their group folder; if they need project source, mount it explicitly via
+    // the mount allowlist.
     if ((CONTAINER_RUNTIME_BIN as string) === 'docker') {
+      mounts.push({
+        hostPath: projectRoot,
+        containerPath: '/workspace/project',
+        readonly: true,
+      });
+
       const envFile = path.join(projectRoot, '.env');
       if (fs.existsSync(envFile)) {
         mounts.push({
