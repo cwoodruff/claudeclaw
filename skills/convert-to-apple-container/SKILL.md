@@ -13,13 +13,12 @@ This skill switches ClaudeClaw's container runtime from Docker to Apple Containe
 - Startup check: `docker info` → `container system status` (with auto-start)
 - Orphan detection: `docker ps --filter` → `container ls --format json`
 - Build script default: `docker` → `container`
-- Dockerfile entrypoint: `.env` shadowing via `mount --bind` inside the container (Apple Container only supports directory mounts, not file mounts like Docker's `/dev/null` overlay)
-- Container runner: main-group containers start as root for `mount --bind`, then drop privileges via `setpriv`
+- Container runner: main-group containers **do not** mount the host project root (the kata kernel rejects bind-mounts over files inside a readonly mount, so the `.env` shadow trick from earlier versions of this skill cannot work). The agent loses read access to host source code in main groups; users who need it can re-add the path via the mount allowlist. Docker behavior is unchanged — the project root is mounted readonly and `.env` is shadowed via a host-side `/dev/null` bind mount.
 
 **What stays the same:**
 - Mount security/allowlist validation
 - All exported interfaces and IPC protocol
-- Non-main container behavior (still uses `--user` flag)
+- Non-main container behavior (still uses `--user` flag, gets group folder + read-only global memory)
 - All other functionality
 
 ## Prerequisites
@@ -30,10 +29,20 @@ Verify Apple Container is installed:
 container --version && echo "Apple Container ready" || echo "Install Apple Container first"
 ```
 
-If not installed:
-- Download from https://github.com/apple/container/releases
-- Install the `.pkg` file
-- Verify: `container --version`
+If not installed, prefer Homebrew (the project ships as a formula now, not a cask):
+
+```bash
+brew install container
+container system start    # one-time, accepts the kata kernel install prompt
+```
+
+Or download from https://github.com/apple/container/releases and install the `.pkg`.
+
+On Apple Silicon, the buildkit also requires Rosetta 2:
+
+```bash
+softwareupdate --install-rosetta --agree-to-license
+```
 
 Apple Container requires macOS. It does not work on Linux.
 
@@ -41,11 +50,13 @@ Apple Container requires macOS. It does not work on Linux.
 
 ### Check if already applied
 
+The runtime files moved from `src/orchestrator/` to `src/runtimes/` in a refactor. Check both locations:
+
 ```bash
-grep "CONTAINER_RUNTIME_BIN" src/orchestrator/container-runtime.ts
+grep -h "CONTAINER_RUNTIME_BIN" src/runtimes/container-runtime.ts src/orchestrator/container-runtime.ts 2>/dev/null
 ```
 
-If it already shows `'container'`, the runtime is already Apple Container. Skip to Phase 3.
+If the result shows `'container'`, the runtime is already Apple Container — skip to Phase 3. If the file is missing entirely, fall back to the old skill-branch merge in Phase 2.
 
 ## Phase 2: Apply Code Changes
 
@@ -69,10 +80,10 @@ git merge upstream/skill/apple-container
 ```
 
 This merges in:
-- `src/orchestrator/container-runtime.ts` — Apple Container implementation (replaces Docker)
-- `src/container-runtime.test.ts` — Apple Container-specific tests
-- `src/orchestrator/container-runner.ts` — .env shadow mount fix and privilege dropping
-- `src/runtimes/docker/Dockerfile` — entrypoint that shadows .env via `mount --bind`
+- `src/runtimes/container-runtime.ts` — Apple Container implementation (replaces Docker; older trees may have this at `src/orchestrator/container-runtime.ts`)
+- `src/runtimes/container-runtime.test.ts` — Apple Container-specific tests
+- `src/runtimes/container-runner.ts` — main-group containers skip the host project-root mount on Apple Container (the kata kernel rejects bind-mounts inside readonly mounts, so `.env` cannot be shadowed there)
+- `src/runtimes/docker/Dockerfile` — entrypoint shadows `.env` via `mount --bind /dev/null` only when the project mount is present (Docker only)
 - `src/runtimes/docker/build.sh` — default runtime set to `container`
 
 If the merge reports conflicts, resolve them by reading the conflicted files and understanding the intent of both sides.
@@ -164,14 +175,26 @@ container builder stop && container builder rm && container builder start
 ```
 
 **Container can't write to mounted directories:**
-Check directory permissions on the host. The container runs as uid 1000.
+Check directory permissions on the host. The container runs as uid 1000 in non-main groups; main groups start as root and drop privileges via `setpriv` to the host user (`RUN_UID`/`RUN_GID`).
+
+**Build fails with "Rosetta is not installed":**
+The Apple Container buildkit needs Rosetta on Apple Silicon. Install it and reset the buildkit:
+```bash
+softwareupdate --install-rosetta --agree-to-license
+container builder stop && container builder rm && container builder start
+```
+
+**Container exits with `mount: /workspace/project/.env: mount point is not a directory`:**
+This is the legacy bug that drove the current design. The kata kernel won't bind-mount over a regular file inside a readonly mount, regardless of source type (`/dev/null`, empty file, etc.). If you see it, you're running an older `container-runner.ts` that still mounts the host project root on Apple Container — pull the latest `src/runtimes/container-runner.ts`, which skips the mount on Apple Container entirely. Rebuild the image afterward.
 
 ## Summary of Changed Files
 
 | File | Type of Change |
 |------|----------------|
-| `src/orchestrator/container-runtime.ts` | Full replacement — Docker → Apple Container API |
-| `src/container-runtime.test.ts` | Full replacement — tests for Apple Container behavior |
-| `src/orchestrator/container-runner.ts` | .env shadow mount removed, main containers start as root with privilege drop |
-| `src/runtimes/docker/Dockerfile` | Entrypoint: `mount --bind` for .env shadowing, `setpriv` privilege drop |
+| `src/runtimes/container-runtime.ts` | Docker → Apple Container API (binary, mount syntax, startup, orphan detection). Older trees may have this at `src/orchestrator/container-runtime.ts`. |
+| `src/runtimes/container-runtime.test.ts` | Tests for Apple Container behavior |
+| `src/runtimes/container-runner.ts` | Main-group containers skip the host project-root mount on Apple Container (kata kernel can't shadow `.env` inside a readonly mount). Containers still start as root and drop privileges via `setpriv`. |
+| `src/runtimes/docker/Dockerfile` | Entrypoint shadows `.env` via `mount --bind /dev/null` only when present (i.e. on Docker — Apple Container no longer mounts the project root) and drops privileges via `setpriv`. |
 | `src/runtimes/docker/build.sh` | Default runtime: `docker` → `container` |
+
+**Trade-off note:** On Apple Container, the agent in main groups can no longer read host source under `/workspace/project`. If a use case requires that access (e.g. self-improvement workflows that edit ClaudeClaw's own code), add the project root to the user's mount allowlist explicitly — accepting that `.env` will then be readable too.
